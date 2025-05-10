@@ -107,6 +107,7 @@
 \def\IC{IC}
 \def\IM{IM}
 \def\EC{EC}
+\def\AI{AI}
 \def\MS{MS}
 \def\ME{ME}
 \def\EN{EN}
@@ -161,6 +162,13 @@
             \def\@edptype{School of}
             \def\@kdptype{학부}
             \def\@kdptypesp{학 부}\fi
+\ifx\@dept\AI \def\@edept{AI Graduate School}
+            \def\@kdept{인공지능}
+            \def\@kdeptn{인 공 지 능}
+            \def\@em{Science}
+            \def\@edptype{}
+            \def\@kdptype{대학원}
+            \def\@kdptypesp{대 학 원}\fi
 \ifx\@dept\MS \def\@edept{Materials Science and Engineering}
             \def\@kdept{신소재공}
             \def\@kdeptn{신 소 재 공}
