@@ -2,39 +2,121 @@
 % Chap 2. Related works of action recognition
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\chapter{The chapter 2}\label{chapter2}
+\chapter{Preliminaries}\label{chapter2}
 
-Write your chapter 2. Write your chapter 2. Write your chapter 2. Write your chapter 2. Write your chapter 2. Write your chapter 2. Write your chapter 2. Write your chapter 2. Write your chapter 2. Write your chapter 2. Write your chapter 2. Write your chapter 2. Write your chapter 2. Write your chapter 2. Write your chapter 2. Write your chapter 2. Write your chapter 2. Write your chapter 2. 
+\section{Reinforcement Learning}
 
-\begin{figure}
-\centering
-\includegraphics[scale=0.5]{imgs/HOG.eps}
-\caption{An eps image}
-\label{fig:hog}
-\end{figure}
+Reinforcement Learning (RL) is a framework in which an agent interacts with an environment and learns a policy to maximize cumulative rewards.
+The agent observes the state of the environment and takes actions based on its policy, receiving rewards as feedback.
+This process is formalized as a Markov Decision Process (MDP), which provides a formal structure for decision making in RL.
+An MDP is defined by a tuple $\langle \mathcal{S}, \mathcal{A}, \mathcal{P}, \mathcal{R}, \gamma \rangle$, where $\mathcal{S}$ is the set of states, $\mathcal{A}$ is the set of actions, $\mathcal{P}$ is the state transition probability function, $\mathcal{R}$ is the reward function, and $\gamma$ is the discount factor.
+The objective of RL is to find an optimal policy $\pi^*$ that maximizes the expected cumulative reward, defined as:
+\begin{equation}
+  \begin{aligned}
+    \theta^* &= \arg\max J(\theta) \\
+    J(\theta) &= \mathbb{E}_{\tau \sim \pi_\theta} \left[\sum^T_{t = 0} r_t \right]
+  \end{aligned}
+\end{equation}
+The policy is assumed to be parameterized by $\theta$ and differentiable.
 
-\section{A section} \label{chap2:sec1}
-\subsection{A subsection} \label{sec1:1-1}
+\subsection{Policy Gradient Methods}
 
-write what you did.
+Since the policy is differentiable, its gradient can be expressed using the likelihood ratio trick:
+\begin{equation}
+  \begin{aligned}
+    \nabla_\theta \pi_\theta(s, a)
+    &= \pi_\theta(s, a) \frac{\nabla_\theta \pi_\theta(s, a)}{\pi_\theta(s, a)} \\
+    &= \pi_\theta(s, a) \nabla_\theta \log \pi_\theta(s, a)
+  \end{aligned}
+\end{equation}
+This term $\nabla_\theta \log \pi_\theta(s, a)$ is referred to as the score function.
+Although we previously defined the objective function $J(\theta)$ as the expected cumulative reward, we now consider a simplified case to facilitate explanation: a one-step MDP, in which the agent takes an action from the initial state, receives a reward, and the episode terminates immediately.
+Then, the objective function can be written as ($d$ is the initial state distribution):
+\begin{equation}
+  \begin{aligned}
+    J(\theta)
+    &= \mathbb{E}_{\pi_\theta}[r] \\
+    &= \sum_{s \in \mathcal{S}} d(s) \sum_{a \in \mathcal{A}} \pi_\theta(s, a) R_{s ,a}
+  \end{aligned}
+\end{equation}
+The gradient of the objective function can be computed as:
+\begin{equation}
+  \begin{aligned}
+    \nabla_\theta J(\theta)
+    &= \sum_{s \in \mathcal{S}} d(s) \sum_{a \in \mathcal{A}} \nabla_\theta \pi_\theta(s, a) R_{s, a} \\
+    &= \sum_{s \in \mathcal{S}} d(s) \sum_{a \in \mathcal{A}} \pi_\theta(s, a) \nabla_\theta \log \pi_\theta(s, a) R_{s, a} \\
+    &= \mathbb{E}_{\pi_\theta} [\nabla_\theta \log \pi_\theta(s, a) r]
+  \end{aligned}
+\end{equation}
+The Policy Gradient Theorem generalizes this result to multi-step MDPs, where the objective function is defined as the expected cumulative reward over multiple time steps.
+\begin{theorem}[Policy Gradient Theorem]
+  \begin{equation}
+    \nabla_\theta J(\theta) = \mathbb{E}_{\pi_\theta}  [\nabla_\theta \log \pi_\theta(s, a) Q^{\pi_\theta}(s, a)]
+  \end{equation}
+\end{theorem}
+In practice, the exact action-value function $Q^{\pi_\theta}(s, a)$ is typically unknown.
+Thus we use the empirical return(cumulative reward) as an unbiased estimate of the action-value function.
+This leads to the Monte Carlo Policy Gradient method, commonly known as REINFORCE algorithm.
+However, REINFORCE suffers from high variance in the gradient estimates due to its reliance on returns.
+A common approach to reducing variance is to use a critic that approximates the action-value function, i.e.,  $Q_W(s, a) \approx Q^{\pi_\theta}(s, a)$
+\begin{equation}
+  \nabla_\theta J(\theta) = \mathbb{E}_{\pi_\theta} [\nabla_\theta \log \pi_\theta(s, a) Q_W(s, a)]
+\end{equation}
+This is the basic idea of Actor-Critic methods.
+Actor updates the policy parameters $\theta$ and a critic updates the value function parameters $W$.
+To further reduce variance, we can introduce a baseline function.
+Importantly, subtracting a baseline from the action-value function does not change the gradient estimate.
+Because the gradient of the baseline function vanishes in expectation:
+\begin{equation}
+  \begin{aligned}
+    \mathbb{E}_{\pi_\theta} [\nabla_\theta \log \pi_\theta(s, a) B(s)]
+    &= \sum_{s \in \mathcal{S}} d(s) \sum_{a \in \mathcal{A}} \pi_\theta(s, a) \nabla_\theta \log \pi_\theta(s, a) B(s) \\
+    &= \sum_{s \in \mathcal{S}} d(s) \sum_{a \in \mathcal{A}} \nabla_\theta \pi_\theta(s, a) B(s) \\
+    &= \sum_{s \in \mathcal{S}} d(s) B(s) \nabla_\theta \sum_{a \in \mathcal{A}} \pi_\theta(s, a) \\
+    &= 0
+  \end{aligned}
+\end{equation}
+Therefore, subtracting a baseline function from the action-value function not only leaves the gradient estimate unchanged, but also significantly reduces its variance.
+\begin{equation}
+  \begin{aligned}
+    A^{\pi_\theta}(s, a) &= Q^{\pi_\theta}(s, a) - V^{\pi_\theta}((s) \\
+    \nabla_\theta J(\theta) &= \mathbb{E}_{\pi_\theta} [\nabla_\theta \log \pi_\theta(s, a) A^{\pi_\theta}(s, a)]
+  \end{aligned}
+\end{equation}
+However, the exact advantage function is generally inaccessible in rewal-world settings, and as a result, both the action-value and value functions must be approximated.
+Since the TD error $\delta^{\pi_\theta}$ is an unbiased estimate of the advantage function,
+\begin{equation}
+  \begin{aligned}
+    \delta^{\pi_\theta} &= r+ \gamma V^{\pi_\theta}(s') - V^{\pi_\theta}(s) \\
+    \mathbb{E}_{\pi_\theta}[\delta^{\pi_\theta}|s, a] &= Q^{\pi_\theta}(s, a) - V^{\pi_\theta}(s) = A^{\pi_\theta}(s, a)
+  \end{aligned}
+\end{equation}
+we can thus use $\delta^{\pi_\theta}$ in place of the advantage function in the policy gradient expression:
+\begin{equation} \label{chap2:eq:pg_td}
+  \nabla_\theta J(\theta) = \mathbb{E}_{\pi_\theta} [\nabla_\theta \log \pi_\theta(s, a) \delta^{\pi_\theta}]
+\end{equation}
+Hence, the TD error provides a practical and efficient way to estimate the advantage function using only the value function, allowing for effective policy updates.
+To summarize, the policy gradient has many equivalent formulations:
+\begin{equation}
+  \begin{aligned}
+    \nabla_\theta J(\theta)
+    &= \mathbb{E}_{\pi_\theta}[\nabla_\theta \log \pi_\theta(s, a) v_t] &\quad \text{REINFORCE} \\
+    &= \mathbb{E}_{\pi_\theta}[\nabla_\theta \log \pi_\theta(s, a) Q_W(s, a)] &\quad \text{Q Actor-Critic} \\
+    &= \mathbb{E}_{\pi_\theta}[\nabla_\theta \log \pi_\theta(s, a) A^{\pi_\theta}(s, a)] &\quad \text{Advantage Actor-Critic} \\
+    &= \mathbb{E}_{\pi_\theta}[\nabla_\theta \log \pi_\theta(s, a) \delta^{\pi_\theta}] &\quad \text{TD Actor-Critic}
+  \end{aligned}
+\end{equation}
 
-
-\begin{algorithm}[H]
-  \KwData{this text}
-  \KwResult{how to write algorithm with \LaTeX2e }
-  initialization\;
-  \While{not at end of this document}{
-    read current\;
-    \eIf{understand}{
-      go to next section\;
-      current section becomes this one\;
-    }{
-      go back to the beginning of current section\;
-    }
-  }
-  \caption{How to write algorithms 1}
-\end{algorithm}
-
-
-Hi, hello, nice to meet you. Hi, hello, nice to meet you. Hi, hello, nice to meet you. Hi, hello, nice to meet you. Hi, hello, nice to meet you. Hi, hello, nice to meet you. Hi, hello, nice to meet you. Hi, hello, nice to meet you. Hi, hello, nice to meet you. Hi, hello, nice to meet you. Hi, hello, nice to meet you. Hi, hello, nice to meet you. 
-
+\subsection{Proximal Policy Optimization (PPO)}
+The policy gradient in \eqref{chap2:eq:pg_td}, used in TD Actor-Critic, can be modified using importance sampling as follows:
+\begin{equation}
+  \begin{aligned}
+    \nabla_\theta J(\theta) 
+    &= \mathbb{E}_{\pi_\theta} \left[ \nabla_\theta \log \pi_\theta(s, a) A^{\pi_\theta}(s, a) \right] \\
+    &= \mathbb{E}_{\pi_{\theta_\text{old}}} \left[ \frac{\pi_\theta(s, a)}{\pi_{\theta_\text{old}}(s, a)} \nabla_\theta \log \pi_\theta(s, a) A^{\pi_\theta}(s, a) \right] \\
+    &= \mathbb{E}_{\pi_{\theta_\text{old}}} \left[ \frac{\nabla_\theta \pi_\theta(s, a)}{\pi_{\theta_\text{old}}(s, a)} A^{\pi_\theta}(s, a) \right] \\
+    &\approx \mathbb{E}_{\pi_{\theta_\text{old}}} \left[ \frac{\nabla_\theta \pi_\theta(s, a)}{\pi_{\theta_\text{old}}(s, a)} A^{\pi_{\theta_\text{old}}}(s, a) \right]
+  \end{aligned}
+\end{equation}
+While using TD errors help reduce the variance of the gradient estimates, they do not directly constrain how much the policy changes during an update.
+PPO is desinged to improve the current policy as much as possible using the collected data, while avoiding large policy updates that can lead to instability.
