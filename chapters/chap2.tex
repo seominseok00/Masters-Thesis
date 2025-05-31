@@ -109,7 +109,7 @@ To summarize, the policy gradient has many equivalent formulations:
 
 \subsection{Proximal Policy Optimization (PPO)}
 The policy gradient in \eqref{chap2:eq:pg_td}, used in TD Actor-Critic, can be modified using importance sampling as follows:
-\begin{equation}
+\begin{equation} \label{chap2:eq:pg_importance_sampling}
   \begin{aligned}
     \nabla_\theta J(\theta) 
     &= \mathbb{E}_{\pi_\theta} \left[ \nabla_\theta \log \pi_\theta(s, a) A^{\pi_\theta}(s, a) \right] \\
@@ -120,3 +120,247 @@ The policy gradient in \eqref{chap2:eq:pg_td}, used in TD Actor-Critic, can be m
 \end{equation}
 While using TD errors help reduce the variance of the gradient estimates, they do not directly constrain how much the policy changes during an update.
 PPO is desinged to improve the current policy as much as possible using the collected data, while avoiding large policy updates that can lead to instability.
+To this end, based on the equation \eqref{chap2:eq:pg_importance_sampling}, PPO updates the policy by maximizing a clipped surrogate objective that constrains the probability ratio $r_t(\theta) = \frac{\pi_\theta(s, a)}{\pi_{\theta_\text{old}}(s, a)}$.
+\begin{equation}
+  \nabla_\theta J^{\text{PPO}}(\theta) = \hat{\mathbb{E}}_t \left[ \min \left( r_t(\theta) \hat{A}_t, \text{clip}(r_t(\theta), 1 - \epsilon, 1 + \epsilon)\hat{A}_t \right)  \right]
+\end{equation}
+This prevents the new policy from deviating too far from the old policy, promoting stable and conservative updates.
+
+\begin{algorithm}
+  \DontPrintSemicolon
+  \caption{PPO}
+  \KwIn{Initial policy parameters $\theta_0$, initial value function parameters $\phi_0$}
+  \For{each epoch $k = 0, 1, 2, \cdots$}{
+    \For{each time step $t = 1$ \KwTo $T$}{
+      \tcp{Collect trajectories}
+      Sample action $a_t \sim \pi_{\theta_{t - 1}}(s_t)$ \;
+      Execute action $a_t$ in the environment and observe reward $r_t$, cost $c_t$ and next state $s_{t + 1}$ \;
+      Store transition $\tau_t = (s_t, a_t, r_t, c_t, s_{t+1})$ in buffer $B_k$ \;
+
+      \If{episode end}{
+        Compute rewards-to-go $\hat{R}_t$ and advantage estimates $\hat{A}_t$ based on the current value function $V_{\phi_k}$ \;
+      }
+    }
+    \BlankLine
+    
+    \tcp{Policy update}
+    Update the policy parameters $\theta$ by maximizing the objective function:
+    \begin{equation*}
+      \begin{aligned}
+        &\theta_{k + 1} = \arg \max \frac{1}{|B_k|T} \sum_{\tau \in B_k} \sum^T_{t = 0} \min \left( r_t(\theta) A^{\pi_{\theta_k}(s_t, a_t)}, \; g\left( \epsilon, A^{\pi_{\theta_k}}(s_t, a_t) \right) \right) \\
+        &\text{where } 
+        r_t(\theta) = \frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_k}(a_t|s_t)}, \;
+        g(\epsilon, A) = 
+          \begin{cases}
+            (1 + \epsilon)A \quad A \geq 0 \\
+            (1 - \epsilon)A \quad A < 0
+          \end{cases}
+      \end{aligned}
+    \end{equation*}    
+    \BlankLine
+
+    \tcp{Value function update}
+    Fit value function by regression on mean-squared error:
+    \begin{equation*}
+      \phi_{k + 1} = \arg\min_\phi \frac{1}{|B_k|T} \sum_{\tau \in B_k} \sum^T_{t = 0} \left( V_\phi(s_t) - \hat{R}_t \right)^2
+    \end{equation*}
+    typically via stochastic gradient descent algorithm.
+  }
+\end{algorithm}
+
+\section{Constrained Reinforcement Learning}
+
+Constrained Reinforcement Learning (CRL) extends the standard RL framework by explicit constraints to ensure that the learned policy not only maximizes rewards but also satisfies specified conditions.
+This framework is typically formalized as a Constrained Markov Decision Process (CMDP), which is defined by a tuple $\langle \mathcal{S}, \mathcal{A}, \mathcal{P}, \mathcal{R}, \mathcal{C}, \gamma \rangle$.
+$\mathcal{C}$ is the cost function associated with the constraint.
+The feasible policy set in a CMDP is given by:
+\begin{equation}
+  \Pi_C = \{\pi: J_c(\pi) \leq d \}
+\end{equation}
+where $J_c(\pi)$ is a cost-based constraint function based on expected cumulative cost and $d$ is the constraint threshold(human-defined hyperparameter).
+The objective of CRL is to find an optimal policy that maximizes the expected cumulative reward while satisfying the constraints:
+\begin{equation} \label{chap2:eq:crl-objective}
+  \begin{aligned}
+    \pi^* &= \arg\max_{\pi_\theta} J(\theta) \\
+    J(\theta) &= \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum^T_{t = 0} r_t \right] \text{ subject to } \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum^T_{t = 0} c_t \right] \leq d
+  \end{aligned}
+\end{equation}
+
+\subsection{Lagrangian Method}
+
+Constrained optimization problem \eqref{chap2:eq:crl-objective} can be reformulated as an unconstrained optimization problem using the Lagrangian relaxation.
+The constraint is incorporated into the objective function using a Lagrange multiplier $\lambda$:
+\begin{equation}
+  \begin{aligned}
+    \pi^* &= \arg\max_{\pi_\theta} \mathcal{L}(\theta, \lambda) \\
+    \mathcal{L}(\theta, \lambda) &= \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum^T_{t = 0} r_t \right] - \lambda \left( \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum^T_{t = 0} c_t \right] - d \right)
+  \end{aligned}
+\end{equation}
+The Lagrange multiplier $\lambda$ is a non-negative scalar ($\lambda \geq 0$) that adjusts the trade-off between maximizing the reward and satisfying the constraint.
+
+\subsection{PPO in Constrained Reinforcement Learning}
+
+PPO can be adapted to the CRL setting by incorporating the Lagrangian method into the policy update process.
+PPO updates the policy by maximizing a surrogate objective that includes the Lagrangian term:
+\begin{equation}
+  \nabla_\theta J^{\text{PPO-CRL}}(\theta) = \hat{\mathbb{E}}_t \left[ \nabla_\theta \left\{ \min \left( r_t(\theta)\hat{A}_t, \text{clip}(r_t(\theta), 1 - \epsilon, 1 + \epsilon)\hat{A}_t \right) - \lambda r_t(\theta)\hat{A}^c_t \right\} \right]
+\end{equation}
+where $\lambda$ is a Lagrange multiplier that adjusts the trade-off between the reward and the cost, and  $\hat{A}^c_t$ denotes the cost advantage function.
+The Lagrange multiplier $\lambda$ is updated iteratively during training to ensure the constraint is satisfied.
+The update of the Lagrange multiplier depends on whether the empirical cumulative cost exceeds the threshold $d$.
+Specifically, the empirical cumulative cost is computed as the average cumulative cost:
+\begin{equation}
+  \hat{J}_c = \frac{1}{N} \sum^n_{i = 1} \sum^T_{t = 0}  c^{(i)}_t
+\end{equation}
+where $n$ is the number of sampled episodes, and $c^{(i)}_t$ denotes the cost received at time step $t$ in the $i$-th episode.
+The Lagrange multiplier $\lambda$ is updated via gradient ascent:
+\begin{equation}
+  \lambda \leftarrow \left[ \lambda + \beta\left( \hat{J}_c - d \right) \right]_+
+\end{equation}
+where $\beta$ is the leraning rate, and $[\cdot]_+$ denotes clipped to be non-negative.
+This update increases $\lambda$ when the empirical cost exceeds the threshold $d$, encouraging the policy to reduce the cost in subsequent updates.
+
+\begin{algorithm}
+  \DontPrintSemicolon
+  \caption{PPO in Constrained Reinforcement Learning}
+  \KwIn{Initial policy parameters $\theta_0$, initial value function parameters $\phi_0$, initial cost value function parameters $\phi^c_0$, Lagrange multiplier $\lambda_0$, threshold $d$}
+  \For{each epoch $k = 0, 1, 2, \cdots$}{
+    \For{each time step $t = 1$ \KwTo $T$}{
+      \tcp{Collect trajectories}
+      Sample action $a_t \sim \pi_{\theta_{t - 1}}(s_t)$ \;
+      Execute action $a_t$ in the environment and observe reward $r_t$, cost $c_t$ and next state $s_{t + 1}$ \;
+      Store transition $\tau_t = (s_t, a_t, r_t, c_t, s_{t+1})$ in buffer $B_k$ \;
+
+      \If{episode end}{
+        Compute rewards-to-go $\hat{R}_t$ and advantage estimates $\hat{A}_t$ based on the current value function $V_{\phi_k}$ \;
+        Compute costs-to-go $\hat{R}^c_t$ and cost advantage estimates $\hat{A}^c_t$ based on the current cost value function $V^c_{\phi_k}$ \;
+      }
+    }
+    \BlankLine
+    
+    \tcp{Lagrange multiplier update}
+    Update the Lagrange multiplier $\lambda$ by gradient ascent:
+    \begin{equation*}
+      \begin{aligned}
+        \hat{J}_c &= \frac{1}{|B_k|T} \sum_{\tau \in B_k} \sum^T_{t = 0} c_t \\
+        \lambda_{k + 1} &= \left[ \lambda_k + \beta\left( \hat{J}_c - d \right) \right]_+
+      \end{aligned}
+    \end{equation*}
+    \BlankLine
+
+
+    \tcp{Policy update}
+    Update the policy parameters $\theta$ by maximizing the objective function:
+    \begin{equation*}
+      \begin{aligned}
+        &\theta_{k + 1} = \arg \max \frac{1}{|B_k|T} \sum_{\tau \in B_k} \sum^T_{t = 0} \min \left( r_t(\theta) A^{\pi_{\theta_k}(s_t, a_t)}, \; g\left( \epsilon, A^{\pi_{\theta_k}}(s_t, a_t) \right) \right) - \lambda_{k + 1} r_t(\theta) \hat{A}^{c, \pi_{\theta_k}(s_t, a_t)}_t \\
+        &\text{where } 
+        r_t(\theta) = \frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_k}(a_t|s_t)}, \;
+        g(\epsilon, A) = 
+          \begin{cases}
+            (1 + \epsilon)A \quad A \geq 0 \\
+            (1 - \epsilon)A \quad A < 0
+          \end{cases}
+      \end{aligned}
+    \end{equation*}    
+    \BlankLine
+
+    \tcp{Value function update}
+    Fit value function by regression on mean-squared error:
+    \begin{equation*}
+      \begin{aligned}
+        \phi_{k + 1} &= \arg\min_\phi \frac{1}{|B_k|T} \sum_{\tau \in B_k} \sum^T_{t = 0} \left( V_\phi(s_t) - \hat{R}_t \right)^2 \\
+        \phi^c_{k + 1} &= \arg\min_\phi \frac{1}{|B_k|T} \sum_{\tau \in B_k} \sum^T_{t = 0} \left( V_{\phi^c}(s_t) - \hat{R}^c_t \right)^2
+      \end{aligned}
+    \end{equation*}
+    typically via stochastic gradient descent algorithm.
+  }
+\end{algorithm}
+
+\section{State-wise Constrained Reinforcement Learning}
+
+State-wise Constrained Reinforcement Learning (SCRL) is a variant of CRL that imposes constraints at the state level.
+CRL considers the cumulative cost over the entire trajectory, while SCRL focuses the expected cost at each time step.
+SCRL is formalized as a State-wise Constrained Markov Decision Process (SCMDP), it is quite similar to CMDP, but SCMDP requires the cost for each state action transition satisfies a hard constraint.
+The objective of SCRL is to find an optimal policy that maximizes the expected cumulative reward while satisfying the state-wise constraints:
+\begin{equation} \label{chap2:eq:scrl-objective}
+  \begin{aligned}
+    \pi^* &= \arg\max_{\pi_\theta} J(\theta) \\
+    J(\theta) &= \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum^T_{t = 0} r_t \right] \text{ subject to } \mathbb{E}_{a \sim \pi_\theta(\cdot|s)}  [c(s, a)] \leq w, \quad \forall s \in S
+  \end{aligned}
+\end{equation}
+Equation \eqref{chap2:eq:scrl-objective} can be reformulated as an unconstrained optimization problem using the Lagrangian relaxation.
+This can be achieved by introducing a Lagrange multiplier $\lambda(s) \geq 0$ for each state to penalize violations of the state-wise constraints.
+\begin{equation}
+  \mathcal{L}(\theta, \lambda) = \mathbb{E}_{\tau \sim \pi_\theta}\left[ \sum^T_{t = 0} r_t \right] - \sum_{s \in \mathcal{S}} \lambda(s) \left( \mathbb{E}_{a \sim \pi_\theta(\cdot|s)}[c(s, a)] - w \right)
+\end{equation}
+
+
+\subsection{PPO in State-wise Constrained Reinforcement Learning}
+PPO can also be extended to the SCRL setting by incorporating the state-wise constraints into the policy update process.
+\begin{equation}
+  \nabla_\theta J^{\text{PPO-SCRL}}(\theta) = \hat{\mathbb{E}}_t \left[ \nabla_\theta \left\{ \min \left( r_t(\theta)\hat{A}_t, \text{clip}(r_t(\theta), 1 - \epsilon, 1 + \epsilon)\hat{A}_t \right) - \lambda(s_t) r_t(\theta) \hat{A}^c_t \right\} \right]
+\end{equation}
+where $\lambda(s_t)$ is the Lagrange multiplier for the state $s_t$ at time step $t$, and $\hat{A}^c_t$ denotes the cost advantage function.
+The Lagrange multiplier $\lambda(s)$ is updated iteratively during training to ensure the state-wise constraint is satisfied.
+The update of the Lagrange multiplier $\lambda(s)$ depends on whether the empirical cost at state $s$ exceeds the threshold $w$.
+Specifically, the empirical cost refers to the actual cost received by the agent at each time step during interaction with the environment.
+% TODO: Check formula
+\begin{equation}
+  \lambda(s) \leftarrow \lambda(s) + \beta(\hat{J}_c - w)
+\end{equation}
+
+% TODO: Check formula
+\begin{algorithm}
+  \DontPrintSemicolon
+  \caption{PPO in State-wise Constrained Reinforcement Learning}
+  \KwIn{Initial policy parameters $\theta_0$, initial value function parameters $\phi_0$, initial cost value function parameters $\phi^c_0$, Lagrange multiplier network parameters $\psi$, threshold $w$}
+  \For{each epoch $k = 0, 1, 2, \cdots$}{
+    \For{each time step $t = 1$ \KwTo $T$}{
+      \tcp{Collect trajectories}
+      Sample action $a_t \sim \pi_{\theta_{t - 1}}(s_t)$ \;
+      Execute action $a_t$ in the environment and observe reward $r_t$, cost $c_t$ and next state $s_{t + 1}$ \;
+      Store transition $\tau_t = (s_t, a_t, r_t, c_t, s_{t+1})$ in buffer $B_k$ \;
+
+      \If{episode end}{
+        Compute rewards-to-go $\hat{R}_t$ and advantage estimates $\hat{A}_t$ based on the current value function $V_{\phi_k}$ \;
+        Compute costs-to-go $\hat{R}^c_t$ and cost advantage estimates $\hat{A}^c_t$ based on the current cost value function $V^c_{\phi_k}$ \;
+      }
+    }
+    \BlankLine
+    
+    \tcp{Lagrange multiplier network update}
+    Update the Lagrange multiplier $\lambda$ by gradient ascent:
+    \begin{equation*}
+        \psi_{k + 1} = \psi_k + \beta \left[ \frac{1}{|B_k|T} \sum_{\tau \in B_k} \sum^T_{t = 0} (c_t - w) \right]
+    \end{equation*}
+    \BlankLine
+
+
+    \tcp{Policy update}
+    Update the policy parameters $\theta$ by maximizing the objective function:
+    \begin{equation*}
+      \begin{aligned}
+        &\theta_{k + 1} = \arg \max \frac{1}{|B_k|T} \sum_{\tau \in B_k} \sum^T_{t = 0} \min \left( r_t(\theta) A^{\pi_{\theta_k}(s_t, a_t)}, \; g\left( \epsilon, A^{\pi_{\theta_k}}(s_t, a_t) \right) \right) - \lambda_\psi (s_t) r_t(\theta) \hat{A}^{c, \pi_{\theta_k}(s_t, a_t)}_t \\
+        &\text{where } 
+        r_t(\theta) = \frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_k}(a_t|s_t)}, \;
+        g(\epsilon, A) = 
+          \begin{cases}
+            (1 + \epsilon)A \quad A \geq 0 \\
+            (1 - \epsilon)A \quad A < 0
+          \end{cases}
+      \end{aligned}
+    \end{equation*}    
+    \BlankLine
+
+    \tcp{Value function update}
+    Fit value function by regression on mean-squared error:
+    \begin{equation*}
+      \begin{aligned}
+        \phi_{k + 1} &= \arg\min_\phi \frac{1}{|B_k|T} \sum_{\tau \in B_k} \sum^T_{t = 0} \left( V_\phi(s_t) - \hat{R}_t \right)^2 \\
+        \phi^c_{k + 1} &= \arg\min_\phi \frac{1}{|B_k|T} \sum_{\tau \in B_k} \sum^T_{t = 0} \left( V_{\phi^c}(s_t) - \hat{R}^c_t \right)^2
+      \end{aligned}
+    \end{equation*}
+    typically via stochastic gradient descent algorithm.
+  }
+\end{algorithm}
