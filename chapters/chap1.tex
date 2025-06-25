@@ -6,37 +6,64 @@
 \chapter{Introduction}\label{chapter1}
 \section{Introduction} \label{chap1:sec1}
 
-Insert your introduction here. Insert your introduction here. Insert your introduction here. Insert your introduction here. Insert your introduction here. Insert your introduction here. Insert your introduction here. Insert your introduction here. Insert your introduction here. Insert your introduction here. Insert your introduction here. Insert your introduction here. Insert your introduction here. Insert your introduction here. Insert your introduction here.  
+Reinforcement Learning (RL) is a method for learning an optimal policy through trial and error, and it has recently been applied in a wide range of domains.
+The goal of RL is to learn a policy that maximizes the cumulative reward, which is iteratively improved through interaction with the environment.
+Therefore, RL agents are typically trained in a simulated environment before deployment in the real world.
+However, even after training, it is difficult to fully guarantee that risky behavior does not occur.
+This is due to factors such as environmental uncertainty, poorly designed reward functions that fail to encourage safe behavior, or an inability to properly handle exceptional situations.
+This issue is especially critical in domains where reliable and safe decision making is crucial, such as robotics, autonomous driving, and healthcare.
+To address the potential for risky behavior, various approaches to intergrating safety into RL have been proposed.
 
+\section{Penalized Reward Function}
 
-\section{Motivation} \label{chap1:sec2}
+One of the most straightforward approaches to ensuring safety in RL is to penalize risky behavior by modifying the reward function.
+This can be done by adding a penalty term to the reward function that discourages unsafe actions. \cite{RCPO}
+\begin{equation}
+    \max_{\pi_\theta} \mathbb{E}_{\tau \sim \pi_\theta}\left[\sum^T_{t = 0} (r_t - \alpha c_t) \right]
+\end{equation}
+where $r_t$ denotes the reward and $c_t$ the cost at time $t$, and $\alpha$ is a hyperparameter that determines the strength of the penalty.
+This approach is simple and effective, but it requires careful tuning of the penalty term to ensure that the agent learns safe behavior without sacrificing performance.
+Moreover, it does not provide an explicit specification of constraints, which makes it difficult to guarantee that the agent will consistently satisfy safety requirements.
 
-insert your own materials \cite{ref1}.
+\section{Constrained Reinforcement Learning}
 
+Constrained Reinforcement Learning (CRL) extends the standard RL framework by explicit constraints to ensure that the learned policy not only maximizes rewards but also satisfies specified conditions.
+This framework is typically formalized as a Constrained Markov Decision Process (CMDP) \cite{CMDP}, which is defined by a tuple $\langle \mathcal{S}, \mathcal{A}, \mathcal{P}, \mathcal{R}, \mathcal{C}, \gamma \rangle$.
+$\mathcal{C}$ is the cost function associated with the constraint.
+The feasible policy set in a CMDP is given by:
+\begin{equation}
+  \Pi_C = \{\pi: J_c(\pi) \leq d \}
+\end{equation}
+where $J_c(\pi)$ is a cost-based constraint function based on expected cumulative cost and $d$ is the constraint threshold(human-defined hyperparameter).
+The objective of CRL is to find an optimal policy that maximizes the expected cumulative reward while satisfying the constraints:
+\begin{equation} \label{chap1:eq:crl-objective}
+  \begin{aligned}
+    \pi^* &= \arg\max_{\pi_\theta} J(\theta) \\
+    J(\theta) &= \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum^T_{t = 0} r_t \right] \text{ subject to } \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum^T_{t = 0} c_t \right] \leq d
+  \end{aligned}
+\end{equation}
 
-\begin{table}[htbp]
-  \centering
-    \begin{tabular}{|c|c|c|c|}
-    \hline
-        & \multicolumn{3}{|c|}{Overall classification results (\%)} \\
-    \hline
-       Descriptors          & KTH   & UCF sports & TV human interaction \\
-    \hline
-    Trajectory & 91.67 & 74.64 & 46.43 \\
-    HOG   & 86.11 & 69.88 & 44.52 \\
-    MBH   & 96.3 & 72.74 & 45.88 \\
-    \hline
-     \hline
-    Combined & 96.3 & 81.07 & 55.4 \\
-    \hline
-    \end{tabular}%
-    \caption{An example table}
-  \label{t1}%
-\end{table}%
+\section{State-wise Constrained Reinforcement Learning}
 
-\begin{figure}
-\centering
-\includegraphics[scale=0.3]{imgs/gist.jpg}
-\caption{The symbol of GIST.}
-\label{fig:gist}
-\end{figure}
+State-wise Constrained Reinforcement Learning (SCRL) is a variant of CRL that imposes constraints at the state level.
+CRL considers the cumulative cost over the entire trajectory, while SCRL focuses the expected cost at each time step.
+SCRL is formalized as a State-wise Constrained Markov Decision Process (SCMDP), it is quite similar to CMDP, but SCMDP requires the cost for each state action transition satisfies a hard constraint.
+The objective of SCRL is to find an optimal policy that maximizes the expected cumulative reward while satisfying the state-wise constraints:
+\begin{equation} \label{chap1:eq:scrl-objective}
+  \begin{aligned}
+    \pi^* &= \arg\max_{\pi_\theta} J(\theta) \\
+    J(\theta) &= \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum^T_{t = 0} r_t \right] \text{ subject to } \mathbb{E}_{a \sim \pi_\theta(\cdot|s)}  [c(s, a)] \leq w, \quad \forall s \in S
+  \end{aligned}
+\end{equation}
+
+\section{Research Objective}
+
+This study focuses on CRL, specifically SCRL, which is a variant of CRL that imposes constraints at the state level.
+We experimentally analyze the limitations of existing method that apply the Lagrangian method to the Soft Actor-Critic (SAC) algorithm.
+Furthermore, we propose an extension of the PPO-Lagrangian algorithm by introducing a neural network that estimates state-wise Lagrange multipliers, and compare its performance with that of existing methods.
+Finally, we demonstrate that the learned Lagrange multiplier network can be used to evaluate state-wise safety throughout the policy's operation.
+
+\section{Outline of the Thesis}
+
+This thesis is organized as follows. In chapter \ref{chapter2}, provides the theoretical background necessary to understand this study.
+It includes the fundamentals of reinforcement learning, policy gradient methods and the Lagrangian method, which are essential for understanding the proposed method.
