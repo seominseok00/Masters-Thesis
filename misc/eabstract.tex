@@ -3,11 +3,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 For the practical deployment of autonomous driving systems, high levels of safety and adaptability are essential.
-Accordingly, Deep Reinforcement Learning (DRL), which learns and improves driving strategies through trial and error, has attracted significant attention.
-However, DRL can raise safety concerns when applied in real-world scenarios due to challenges such as reward design and failure to generalize out-of-distribution scenarios.
-To address these issues, Constrained Reinforcement Learning (CRL) has been proposed, which seeks to balance safety and performance during policy learning.
-CRL is typically formulated using Constrained Markov Decision Processes (CMDPs), where constraints are defined as expected cumulative costs.
-Nevertheless, in autonomous driving, some constraints---such as collision avoidance---require immediate reactions.
-Thus, even when CMDP-based policies satisfy cumulative cost-based constraints, violations of instant constraints may still occur.
-In this paper, we propose a Lagrangian-based policy optimization method that estimates state-wise Lagrangian multipliers to precisely reflect constraints and consider state-level safety.
-The proposed method is validated on a navigation task in the Safety Gym environment developed by OpenAI, where a vehicle must reach a designated goal location.
+Accordingly, Deep Reinforcement Learning (DRL), which learns and improves driving strategies through trial and error, has gained attention.
+However, the reward-driven nature of reinforcement learning may still lead to unsafe or abnormal behavior even after training.
+To address this limitation, Constrained Reinforcement Learning (CRL) has been proposed to balance safety and performance.
+While CRL typically defines constraints as expected cumulative costs, this formulation does not consider whether constraints are satisfied at each state, making it difficult to ensure state-wise safety.
+In this paper, we extend a Lagrangian-based CRL approach by estimating state-wise Lagrangian multipliers, allowing the policy to account for state-level safety.
+We evaluate the proposed method in OpenAI's Safety Gym environment and compare its performance with existing Lagrangian-based methods.
