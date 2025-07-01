@@ -6,44 +6,74 @@
 
 \usepackage{amsmath, amssymb}
 
-% yoon
-\usepackage[ruled,vlined,linesnumbered]{algorithm2e}
-\usepackage{etoolbox}
+% \usepackage{algorithm}
+% \usepackage{amsfonts}
+% \usepackage{algorithmic}
 \AtBeginEnvironment{algorithm}{\setstretch{1.0}}
 \usepackage[lofdepth=1]{subfig}
 \usepackage[rightcaption]{sidecap}
 \usepackage{multirow}
 \usepackage{makecell}
+% \usepackage{array}
+
+% yoon
+\usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+\usepackage{etoolbox}
 \usepackage{url}
 
 \newcommand\etal{\textit{et~al.\ }}
 \newcommand\eg{\textit{e.g.\ }}
 \newcommand\ie{\textrm{i.e.\ }}
+\newcommand\R{\mathbb{R}}
 % yoon
 
-\usepackage{theorem}
-\usepackage{multirow}
+% \usepackage{theorem}
 \usepackage{setspace}
 \usepackage{appendix}
-\usepackage{url}
+\usepackage{cite}
+\usepackage{csquotes}
 
+\usepackage[colorlinks=true,linkcolor=black,citecolor=black]{hyperref}
+% \usepackage[]{hyperref}
+% \hypersetup{
+%     % bookmarksnumbered=true,
+%     %   linkbordercolor=blue,
+%     %   filebordercolor=red,
+%     %   citebordercolor = green,      
+%     %   urlbordercolor=red,
+%       %
+%       colorlinks=false
+%       % linkcolor=blue,
+%       % filecolor=blue,
+%       % citecolor = blue,      
+%       % urlcolor=cyan,
+% }
+
+\usepackage{bookmark}
+\bookmarksetup{numbered}
+
+\makeatletter
+\bookmarksetup{%
+  addtohook={%
+    \ifnum\toclevel@chapter=\bookmarkget{level}\relax
+      \renewcommand*{\numberline}[1]{CHAPTER #1 }%
+    \fi
+  },
+}
+\makeatother
+
+\usepackage{cleveref, autonum}
+
+\usepackage{amsthm}
 \newtheorem{theorem}{Theorem}[section]
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{corollary}[theorem]{Corollary}
-
-\newenvironment{definition}[1][Definition]{\begin{trivlist}
-\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
-\newenvironment{proof}[1][Proof]{\begin{trivlist}
-\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
-\newenvironment{example}[1][Example]{\begin{trivlist}
-\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
-\newenvironment{remark}[1][Remark]{\begin{trivlist}
-\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
-
-\newcommand{\qed}{\nobreak \ifvmode \relax \else
-      \ifdim\lastskip<1.5em \hskip-\lastskip
-      \hskip1.5em plus0em minus0.5em \fi \nobreak
-      \vrule height0.75em width0.5em depth0.25em\fi}
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{corollary}{Corollary}[section]
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{assumption}{Assumption}[section]
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}[section]
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
 
 %-----------------------------------------------------------------------
 % Department code list
@@ -51,7 +81,8 @@
 % IM - Information and Mechatronics
 % EC - Electric Engineering and Computer Science
 % MS - Materials Science and Engineering
-% ME - Mechatronics
+% ME - Mechanical and Robotics Engineering
+% AI - Artificial Intelligence Graduate School
 % EN - Earth Science and Environmental Engineering
 % LS - Life Science
 % PH - Physics and Photon Science
@@ -65,7 +96,7 @@
 % Department code
 %\code{{BS/}{EC}}
 %\code{{MS/}{EC}} % 학위와 소속 코드, 초록 페이지에 나타남
-\code{{PhD/}{EC}}
+\code{{MS/}{AI}}
 %-----------------------------------------------------------------------
 % Thesis title in English
 % Insert \titlebreak where lines are to be separated.  Do not use the LaTeX command '\\'.
@@ -98,27 +129,27 @@
 
 %-----------------------------------------------------------------------
 % Name of the author in English
-\ename{Kwangjin Yoon}
+\ename{Minseok Seo}
 
 %-----------------------------------------------------------------------
 % Name of the author in Korean seperated with '{}'.
-\kname{{}{}{}{}{윤}{광}{진}} % 한글 이름 7글자까지 가능, 오른쪽 끝에 맞춰서 입력
+\kname{{}{}{}{}{서}{민}{석}} % 한글 이름 7글자까지 가능, 오른쪽 끝에 맞춰서 입력
 
 %-----------------------------------------------------------------------
 % Student ID of the author
-\studentid{20142068}
+\studentid{20231115}
 
 %-----------------------------------------------------------------------
 % The year of graduation (ex. 1999)
-\coveryear{2019}
+\coveryear{2025}
 
 %-----------------------------------------------------------------------
 % The date signed by the advisor.  The first is the month, second the date, and third the year.
-\advisorsigndate{May}{27}{2019}
+\advisorsigndate{June}{20}{2025}
 
 %-----------------------------------------------------------------------
 % The date signed by the referees.  The first is the month, second the date, and third the year.
-\refereesigndate{May}{27}{2019}
+\refereesigndate{June}{20}{2025}
 
 %-----------------------------------------------------------------------
 % Names of the referees in English
@@ -129,16 +160,17 @@
 \refereeA{Prof. first prof.}
 \refereeB{Prof. second prof.}
 \refereeC{Prof. third prof.}
-\refereeD{Prof. fourth prof.}
-\refereeE{Prof. fifth prof.}
+% \refereeD{Prof. fourth prof.}
+% \refereeE{Prof. fifth prof.}
 
 %-----------------------------------------------------------------------
 % This is the beginning of the thesis.
 
-\dedication{Dedicated to my family.}
+\dedication{
+Dedicated to my family.
+}
 
 \begin{document}
-
 %-----------------------------------------------------------------------
 % Abstract of the thesis in English.
 % Insert the abstract between \begin{eabstract} and \end{eabstract}.
@@ -181,13 +213,13 @@
 \makecontents
 
 % In case there is no table, comment out the following line.
-\listtables
+% \listtables
 
 % In case there is no figure, comment out the following line.
 \listfigures
 
 % In case there is no algorithm, comment out the following line.
-\listalgorithms
+% \listalgorithms
 
 %-----------------------------------------------------------------------
 % Input the thesis files written in LaTeX.
@@ -204,7 +236,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % DO NOT DELETE FOLLOWING TWO LINES! %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{spacing}{2.0} % double spacing
+% \begin{spacing}{2.0} % double spacing
+\begin{spacing}{1.3} % double spacing
 \pagenumbering{arabic}
 \setcounter{page}{1}
 
@@ -217,12 +250,13 @@
 % Chapter 2 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\begin{spacing}{2.0}
-
+% \begin{spacing}{2.0} % double spacing
+\begin{spacing}{1.3} % double spacing
 \input{chapters/chap2.tex}
 
 \end{spacing}
 
+      
 %%%%%%%%
 % Add more chapters if you wants
 %%%%%%%%
@@ -247,9 +281,9 @@
 % Appendix
 % You can comment out if you do not need appendix
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{spacing}{2.0}
-\input{misc/Appendix.tex}
-\end{spacing}
+% \begin{spacing}{2.0}
+% \input{misc/Appendix.tex}
+% \end{spacing}
 
 %-----------------------------------------------------------------------
 % Acknowledgements

@@ -109,6 +109,7 @@
 \def\EC{EC}
 \def\MS{MS}
 \def\ME{ME}
+\def\AI{AI}
 \def\EN{EN}
 \def\LS{LS}
 \def\PH{PH}
@@ -168,13 +169,20 @@
             \def\@edptype{School of}
             \def\@kdptype{학부}
             \def\@kdptypesp{학 부}\fi
-\ifx\@dept\ME \def\@edept{Mechatronics}
-            \def\@kdept{기계공}
-            \def\@kdeptn{기 계 공}
+\ifx\@dept\ME \def\@edept{Mechanical and Robotics Engineering}
+            \def\@kdept{기계로봇공}
+            \def\@kdeptn{기 계 로 봇 공}
             \def\@em{Science}
             \def\@edptype{School of}
             \def\@kdptype{학부}
             \def\@kdptypesp{학 부}\fi
+\ifx\@dept\AI \def\@edept{Artificial Intelligence Graduate School}
+            \def\@kdept{AI}
+            \def\@kdeptn{A I}
+            \def\@em{Science}
+            \def\@edptype{}
+            \def\@kdptype{대학원(학과)}
+            \def\@kdptypesp{대 학 원 ( 학 과 )}\fi
 \ifx\@dept\EN \def\@edept{Earth Science and Environmental Engineering}
             \def\@kdept{지구환경공}
             \def\@kdeptn{지 구 환 경 공}

@@ -1,8 +1,9 @@
 
 광주과학기술원 졸업 논문 (영문) 템플렛의 OVERLEAF 버전입니다.
-저희 연구실 (EECS MLV)의 졸업자이신 유정민 선배님이 만들어둔 템플렛을 수정하여 OVERLEAF에 맞게 변형했습니다.
 
-수정자: 윤광진 (전기전자컴퓨터공학부, 2019년 8월 졸업), yoon28@gist.ac.kr
+1차 수정자: 윤광진 (전기전자컴퓨터공학부, 2019년 8월 졸업), yoon28@gist.ac.kr
+2차 수정자: 유명석 (기계공학부, 2025년 2월 졸업), dding_98@gm.gist.ac.kr
+3차 수정자: 서민석 (AI대학원, 2025년 8월 졸업), seominseok@gm.gist.ac.kr
 
 주의: 영문 졸업 논문 작성에 맞도록 수정되었으며, 국문 졸업 논문 작성 환경에서는 테스트 하지 못했기때문에 작동 여부를 장담하지 못합니다.
 
@@ -14,12 +15,13 @@
     MS : 석사학위
     PhD: 박사학위
 
-% 학과 코드, 현재 (2019년)
+% 학과 코드, 현재 (2025년)
 % IC - Information and Communications
 % IM - Information and Mechatronics
 % EC - Electric Engineering and Computer Science
 % MS - Materials Science and Engineering
-% ME - Mechatronics
+% ME - Mechanical and Robotics Engineering
+% AI - Artificial Intelligence Graduate School
 % EN - Earth Science and Environmental Engineering
 % LS - Life Science
 % PH - Physics and Photon Science
