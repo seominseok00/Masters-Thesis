@@ -2,4 +2,10 @@
 % Abstract of the thesis in English
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-The abstract will be located here.
+For the practical deployment of autonomous driving systems, high levels of safety and adaptability are essential.
+Accordingly, Deep Reinforcement Learning (DRL), which learns and improves driving strategies through trial and error, has gained attention.
+However, the reward-driven nature of reinforcement learning may still lead to unsafe or abnormal behavior even after training.
+To address this limitation, Constrained Reinforcement Learning (CRL) has been proposed to balance safety and performance.
+While CRL typically defines constraints as expected cumulative costs, this formulation does not consider whether constraints are satisfied at each state, making it difficult to ensure state-wise safety.
+In this paper, we extend a Lagrangian-based CRL approach by estimating state-wise Lagrangian multipliers, allowing the policy to account for state-level safety.
+We evaluate the proposed method in OpenAI's Safety Gym environment and compare its performance with existing Lagrangian-based methods.
