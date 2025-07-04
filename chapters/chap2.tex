@@ -12,10 +12,11 @@ Reinforcement Learning (RL) is a framework in which an agent interacts with an e
 The agent observes the state of the environment, takes actions, and receives rewards based on those actions.
 This process is formalized as a Markov Decision Process (MDP) \cite{MDP}, which provides a formal strcuture for modeling decision-making problems.
 An MDP is defined by a tuple \((\mathcal{S}, \mathcal{A}, P, R, \gamma)\), where $\mathcal{S}$ is the set of states, $\mathcal{A}$ is the set of actions, $P$ is the state transition probability function, $R$ is the reward function, and $\gamma \in [0, 1)$ is the discount factor.
+In this thesis, we consider a finite-horizon setting and use the undiscounted return.
 The objective of RL is to find an optimal policy $\pi^*$ that maximizes the expected cumulative reward, defined as:
 \begin{equation}
   \begin{aligned}
-    \theta^* &= \arg\max J(\theta) \\
+    \theta^* &= \arg\max_\theta J(\theta) \\
     J(\theta) &= \mathbb{E}_{\tau \sim \pi_\theta} \left[\sum^T_{t = 0} r_t \right]
   \end{aligned}
 \end{equation}
@@ -75,9 +76,9 @@ However, REINFORCE suffers from high variance in the gradient estimates, due to 
 
 \subsection{Actor-Critic}
 
-A common approach to reducing the variance is to use a critic approximates the action value function, $Q_w(s, a) \approx Q^{\pi_\theta}(s, a)$.
+A common approach to reducing the variance is to use a critic approximates the action value function, $Q_\phi(s, a) \approx Q^{\pi_\theta}(s, a)$.
 \begin{equation}
-  \nabla_\theta J(\theta) = \mathbb{E}_{\pi_\theta} [\nabla_\theta \log \pi_\theta(s, a) Q_w(s, a)]
+  \nabla_\theta J(\theta) = \mathbb{E}_{\pi_\theta} [\nabla_\theta \log \pi_\theta(s, a) Q_\phi(s, a)]
 \end{equation}
 This is the basic idea of the Actor-Critic methods.
 Actor updates the policy parameters $\theta$ and a critic updates the value function parameters $w$.
@@ -103,27 +104,12 @@ Therefore, subtracting a baseline function from the action value function not on
 \end{equation}
 However, since the exact advantage function is generally inaccessible, both the action value function $Q^{\pi_\theta}(s, a)$ and the value function $V^{\pi_\theta}(s)$ must be approximated.
 One common approach is to use the temporal difference (TD) error $\delta^{\pi_\theta}$, which is an unbiased estimator of the advantage function.
-
-\subsection{TD Actor-Critic}
-
-The TD error is defined as:
-\begin{equation}
-  \begin{aligned}
-    \delta^{\pi_\theta} &= r+ \gamma V^{\pi_\theta}(s') - V^{\pi_\theta}(s) \\
-    \mathbb{E}_{\pi_\theta}[\delta^{\pi_\theta}|s, a] &= Q^{\pi_\theta}(s, a) - V^{\pi_\theta}(s) = A^{\pi_\theta}(s, a)
-  \end{aligned}
-\end{equation}
-Thus, we can use $\delta^{\pi_\theta}$ in place of the advantage function in the policy gradient formula.
-\begin{equation}
-  \nabla_\theta J(\theta) = \mathbb{E}_{\pi_\theta} [\nabla_\theta \log \pi_\theta(s, a) \delta^{\pi_\theta}]
-\end{equation}
-Hence, the TD error provides a practical and efficient way to estimate the advantage function using only the value function.
 To summarize, the policy gradient has many equivalent formulations:
 \begin{equation}
   \begin{aligned}
     \nabla_\theta J(\theta)
     &= \mathbb{E}_{\pi_\theta}[\nabla_\theta \log \pi_\theta(s, a) v_t] &\quad \text{REINFORCE} \\
-    &= \mathbb{E}_{\pi_\theta}[\nabla_\theta \log \pi_\theta(s, a) Q_W(s, a)] &\quad \text{Q Actor-Critic} \\
+    &= \mathbb{E}_{\pi_\theta}[\nabla_\theta \log \pi_\theta(s, a) Q_\phi(s, a)] &\quad \text{Q Actor-Critic} \\
     &= \mathbb{E}_{\pi_\theta}[\nabla_\theta \log \pi_\theta(s, a) A^{\pi_\theta}(s, a)] &\quad \text{Advantage Actor-Critic} \\
     &= \mathbb{E}_{\pi_\theta}[\nabla_\theta \log \pi_\theta(s, a) \delta^{\pi_\theta}] &\quad \text{TD Actor-Critic}
   \end{aligned}
@@ -184,3 +170,104 @@ In SAC, the policy is trained with the objective of maximizing the expected retu
 where $\mathcal{H}(\cdot)$ is the entropy measure and $\alpha$ controls how important the entropy term is relative to the reward.
 Entropy maximization leads to policies that can explore more and capture multiple modes of near-optimal strategies.
 If there exist multiple options that seem equally good, the policy should assign each of them an equal probability.
+In the SAC algorithm, the policy is updated through the soft policy iteration.
+First, the policy evaluation step of soft policy iteration computes the soft Q-value:
+\begin{equation}
+  Q^{\pi_\theta}(s, a) = \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum^T_{t = 0} \left(r_t + \alpha \mathcal{H}(\pi_\theta(\cdot|s_t))\right) \Bigg| s_0 = s, a_0 = a \right]
+\end{equation}
+Then, the policy improvement step updates the policy to minimize the KL-divergence:
+\begin{equation}
+  \begin{aligned}
+    J(\theta)
+    &= \mathbb{E}_{s_t \sim \mathcal{D}} \left[ D_\text{KL} \left( \pi_\theta(\cdot|s_t) \Bigg|\Bigg| \frac{\exp(Q_\theta(s_t, \cdot))}{z_\theta(s_t)} \right) \right] \\
+    &= \mathbb{E}_{s_t \sim \mathcal{D}} \left[ \mathbb{E}_{a_t \sim \pi_\theta} [\alpha \log (\pi_\theta(a_t|s_t)) - Q_\phi(s_t, a_t)] \right]
+  \end{aligned}
+\end{equation}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Constrained Reinforcement Learning} \label{chap2:sec4}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Constrained Reinforcement Learning (CRL) extends the standard RL framework by incorporating constraints into the learning process.
+CRL is formalized as a Constrained Markov Decision Process (CMDP) \cite{CMDP}, which is defined by a tuple $\langle \mathcal{S}, \mathcal{A}, \mathcal{P}, \mathcal{R}, \mathcal{C}, \gamma \rangle$.
+Here, $\mathcal{C}$ is the cost functions associated with the constraints.
+The feasible policy set in a CMDP is given by:
+\begin{equation}
+  \Pi_C = \{\pi: J_{c_i}(\pi) \leq d_i, \quad i = 1, \cdots, k\}
+\end{equation}
+where $J_{c_i}(\pi)$ is a cost-based constraint function defined the expected cumulative cost, and $d_i$ is the threshold for the $i$-th constraint.
+The objective of CRL is to find an optimal policy that maximizes the expected cumulative reward while satisfying the constraints.
+In the context of policy gradient methods, the constrained optimization problem can be formulated as follows:
+\begin{equation} \label{chap2:eq:crl-objective}
+  \begin{aligned}
+    \theta^* &= \arg\max_\theta J(\theta) \\
+    J(\theta) &= \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum^T_{t = 0} r_t \right] \; \text{subject to} \; \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum^T_{t = 0} c_t \right] \leq d
+  \end{aligned}
+\end{equation}
+
+\subsection{Lagrangian Method}
+
+Constrained optimization problem defined in \cref{chap2:eq:crl-objective} can be solved using various methods.
+In this thesis, however, we consider only the Lagrangian method.
+By applying Lagrangian relaxation, the constrained optimization problem can be transformed into an unconstrained optimization problem, in which the constraint is incorporated into the objective function using a Lagrange multiplier $\lambda$.
+\begin{equation}
+  \begin{aligned}
+    \theta^* &= \arg\max_\theta \mathcal{L}(\theta, \lambda) \\
+    \mathcal{L}(\theta, \lambda) &= \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum^T_{t = 0} r_t \right] - \lambda \left( \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum^T_{t = 0} c_t \right] - d \right)
+  \end{aligned}
+\end{equation}
+The Lagrange multiplier $\lambda$ is a non-negative scalar that adjusts the trade-off between maximizing the expected cumulative reward and satisfying the constraints.
+
+\subsection{Related Work: PPO Lagrangian}
+
+PPO Lagrangian is an adaptation of PPO to the CRL setting by incorporating the Lagrangian method \cite{PPO-Lagrangian}.
+Thus, the objective function of PPO Lagrangian can be written as:
+\begin{equation}
+  J^{\text{PPO-Lag}}(\theta) = \mathbb{E}_{\pi_{\theta_\text{old}}} \left[ \min \left( r(\theta) A^{\pi_{\theta_\text{old}}}(s, a), \text{clip}(r(\theta), 1 - \epsilon, 1 + \epsilon)A^{\pi_{\theta_\text{old}}}(s, a) \right) - \lambda r(\theta) A^{\pi_{\theta_\text{old}}}_c \right]
+\end{equation}
+where $\lambda$ is the Lagrange multiplier that adjusts the trade-off between the reward and the cost and  $A^{\pi_{\theta_\text{old}}}_c$ is the advantage function for the cost.
+The Lagrange multiplier $\lambda$ is updated iteratively during training to ensure the constraint is satisfied.
+The update of the Lagrange multiplier depends on whether the empirical cumulative cost exceeds the threshold $d$.
+Specifically, the empirical cumulative cost is computed as:
+\begin{equation}
+  \hat{J}_c = \frac{1}{N} \sum^N_{i = 1} \sum^T_{t = 0}  c^{(i)}_t
+\end{equation}
+where $N$ is the number of sampled episodes, and $c^{(i)}_t$ denotes the cost received at time step $t$ in the $i$-th episode.
+The Lagrange multiplier $\lambda$ is updated via gradient ascent:
+\begin{equation}
+  \lambda \leftarrow \left[ \lambda + \beta\left( \hat{J}_c - d \right) \right]_+
+\end{equation}
+where $\beta$ is the leraning rate, and $[\cdot]_+$ denotes clipped to be non-negative.
+This update increases $\lambda$ when the empirical cost exceeds the threshold $d$, encouraging the policy to reduce the cost in subsequent updates.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{State-wise Constrained Reinforcement Learning} \label{chap2:sec5}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+State-wise Constrained Reinforcement Learning (SCRL) is a variant of CRL that imposes constraints at the state level.
+CRL considers the cumulative cost over the entire trajectory, while SCRL focuses on the cost at each transition.
+SCRL is formalized as a State-wise Constrained Markov Decision Process (SCMPD), it is quite similar to CMDP, but SCMDP enforces the constraint for every state action trasition satisfies a hard constraints.
+The objective of SCRL is to find an optimal policy that maximizes the expected cumulative reward while satisfying the state-wise constraints.
+\begin{equation}
+  \begin{aligned}
+    \pi^* &= \arg\max_{\pi_\theta} J(\theta) \\
+    J(\theta) &= \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum^T_{t = 0} r_t \right] \; \text{subject to} \; \mathbb{E}_{\tau \sim \pi_\theta}  [c(s, a)] \leq w, \quad \forall s \in S
+  \end{aligned}
+\end{equation}
+
+\subsection{Related Work: Feasible Actor-Critic}
+
+Feasible Actor-Critic (FAC) is an extension of the Soft Actor-Critic algorithm to the SCRL setting \cite{FAC}.
+In FAC, the state-wise constraint is enforced via a cost action-value function, formulated as:
+\begin{equation}
+  Q^{\pi_\theta}_c(s, a) = \mathbb{E}_{\tau \sim \pi_\theta}\left[\sum^T_{t = 0} c_t |s_0 = s, a_0 = ~a \right] \leq w
+\end{equation}
+The objective function of FAC is defined as:
+\begin{equation}
+  J^{\text{FAC}}(\theta) = \mathbb{E}_{s_t \sim \mathcal{D}} \left[ \mathbb{E}_{a_t \sim \pi_\theta} [\alpha \log(\pi_\theta(a_t|s_t)) - Q_\phi(s_t, a_t) + \lambda_\xi(s_t)\left( Q_{\phi_c}(s_t, a_t) - w \right) ] \right]
+\end{equation}
+where $Q_{\phi_c}$ is the cost action-value function, and $\lambda_\xi$ is the Lagrange multiplier network, which estimate the Lagrange multiplier for each state.
+The update of the Lagrange multiplier network depends on whether the cost action-value function exceeds the threshold $w$.
+\begin{equation}
+  J_\lambda(\xi) = \mathbb{E}_{s_t \sim \mathcal{D}} \left[ \mathbb{E}_{a_t \sim \pi_\theta} \left[ \lambda_\xi(s_t) \left( Q_{\phi_c}(s_t, a_t) - w \right) \right] \right]
+\end{equation}
