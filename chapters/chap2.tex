@@ -222,7 +222,10 @@ The Lagrange multiplier $\lambda$ is a non-negative scalar that adjusts the trad
 PPO Lagrangian is an adaptation of PPO to the CRL setting by incorporating the Lagrangian method \cite{PPO-Lagrangian}.
 Thus, the objective function of PPO Lagrangian can be written as:
 \begin{equation} \label{chap2:eq:ppo_lag}
-  J^{\text{PPO-Lag}}(\theta) = \mathbb{E}_{\pi_{\theta_\text{old}}} \left[ \min \left( r(\theta) A^{\pi_{\theta_\text{old}}}(s, a), \text{clip}(r(\theta), 1 - \epsilon, 1 + \epsilon)A^{\pi_{\theta_\text{old}}}(s, a) \right) - \lambda r(\theta) A^{\pi_{\theta_\text{old}}}_c \right]
+  \begin{aligned}
+    J^{\text{PPO-Lag}}(\theta) = \mathbb{E}_{\pi_{\theta_\text{old}}} \Big[ &\min \big( r(\theta) A^{\pi_{\theta_\text{old}}}(s, a), \text{clip}(r(\theta), 1 - \epsilon, 1 + \epsilon) A^{\pi_{\theta_\text{old}}}(s, a) \big) \\
+    &- \lambda r(\theta) A^{\pi_{\theta_\text{old}}}_c \Big]
+  \end{aligned}
 \end{equation}
 where $\lambda$ is the Lagrange multiplier that adjusts the trade-off between the reward and the cost and  $A^{\pi_{\theta_\text{old}}}_c$ is the advantage function for the cost.
 The Lagrange multiplier $\lambda$ is updated iteratively during training to ensure the constraint is satisfied.
