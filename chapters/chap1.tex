@@ -6,37 +6,46 @@
 \chapter{Introduction}\label{chapter1}
 \section{Introduction} \label{chap1:sec1}
 
-Insert your introduction here. Insert your introduction here. Insert your introduction here. Insert your introduction here. Insert your introduction here. Insert your introduction here. Insert your introduction here. Insert your introduction here. Insert your introduction here. Insert your introduction here. Insert your introduction here. Insert your introduction here. Insert your introduction here. Insert your introduction here. Insert your introduction here.  
+Reinforcement Learning (RL) \cite{RL} is a method for learning an optimal policy through trial and error.
+Although its theoretical foundations have been established for several decades, its practical applications were limited by various challenges.
+One of the biggest challenges in reinforcement learning is extending it to continuous spaces, which leads to an increase in the dimensionality of state and action spaces.
+Due to the exponential growth in the number of possible states and actions, the corresponding rise in computational complexity poses a significant obstacle to learning in high-dimensional environments.
+To address this issue, traditional approaches often relied on handcrafted feature engineering to simplify the problem space.
+However, designing effective features by hand is both time-consuming and domain-specific, limiting the generalizability of learned policies across different tasks.
+The emergence of deep learning addressed this issue by enabling automatic feature extraction from raw, high-dimensional inputs such as images, sensor data.
+This advancement eliminated the need for manual feature design and allowed reinforcement learning agents to operate directly on raw observations.
+However, applying deep learning to reinforcement learning introduced another significant challenge: the data collected by agents is highly correlated.
+Unlike supervised learning, where training data is typically assumed to be independent and identically distributed (IID), RL agents interact sequentially with the environment, resulting in temporally correlated data.
+This violates the IID assumption and can lead to instability and inefficient learning when training neural networks.
+A major breakthrough in overcoming these limitations came with the introduction of Deep Q-Network (DQN) \cite{DQN1, DQN2} by DeepMind.
+By combining deep neural networks with Q-learning, DQN enabled agents to approximate complex value functions from high-dimensional inputs such as raw pixel images.
+This advancement allowed RL agent could achieve human-level performance in a variety of Atari games without relying on handcrafted features.
+This success of DQN has led to significant advances in the field of deep reinforcement learning (DRL), such as AlphaGo \cite{AlphaGo} and AlphaZero \cite{AlphaZero} by DeepMind, which demonstrated superhuman performance in board games like Go, Chess, and Shogi.
+In addition, OpenAI Five \cite{Five} showcased the power of DRL in complex, multi-agent environments by defeating professional human players in the real-time strategy game Dota 2.
+Another notable example is Dactyl \cite{Dactyl}, a robotic hand developed by OpenAI that learned to manipulate physical objects using reinforcement learning trained in simulation and successfully transferred to the real world, highlighting progress in sim-to-real transfer for robotic control.
+Despite these impressive achievements, applying reinforcement learning to real-world environments remains challenging.
+RL agents typically require a large number of iterations to learn effective policies, often relying on extensive exploration to discover rewarding behaviors.
+However, during this exploration process, agents may take unsafe or risky actions that can lead to catastrophic failures—particularly in safety-critical domains such as robotics, autonomous driving, or healthcare.
+Moreover, even after training is complete, there is no guarantee that the learned policy will consistently behave safely, especially in unseen or out-of-distribution (OOD) environments.
+In particular, transferring policies from simulation to the real world (i.e., the sim-to-real problem) can cause even greater safety concerns when learned behaviors don’t generalize well to the real world.
+A key underlying difficulty is the inherent challenge of designing reward functions that reliably induce safe and desirable behaviors across a wide range of situations.
+
+\section{Research Objective}
+
+In this thesis, we investigate how to learn safe policies in reinforcement learning through constrained optimization techniques, focusing on State-wise Constrained Reinforcement Learning (SCRL) \cite{SCRL-survey}, which introduces cost functions to enforce state-wise safety constraints during the learning process.
+Among various SCRL approaches, we examine Lagrangian-based methods due to their theoretical simplicity and empirical popularity.
+This thesis analyzes the limitations of existing Lagrangian methods in the SCRL setting and empirically examines how specific design choices, including the final-layer bias initialization and the learning rate of the Lagrange multiplier network, influence both performance and safety.
+We also propose a method, PPO Lagrangian Network, which extends Proximal Policy Optimization to the state-wise constraint setting using a Lagrange multiplier network.
+The proposed method is empirically evaluated against existing approaches on a range of tasks from the OpenAI Safety Gym.
 
 
-\section{Motivation} \label{chap1:sec2}
+\section{Outline of the Thesis}
 
-insert your own materials \cite{ref1}.
+This thesis is organized as follows:
 
-
-\begin{table}[htbp]
-  \centering
-    \begin{tabular}{|c|c|c|c|}
-    \hline
-        & \multicolumn{3}{|c|}{Overall classification results (\%)} \\
-    \hline
-       Descriptors          & KTH   & UCF sports & TV human interaction \\
-    \hline
-    Trajectory & 91.67 & 74.64 & 46.43 \\
-    HOG   & 86.11 & 69.88 & 44.52 \\
-    MBH   & 96.3 & 72.74 & 45.88 \\
-    \hline
-     \hline
-    Combined & 96.3 & 81.07 & 55.4 \\
-    \hline
-    \end{tabular}%
-    \caption{An example table}
-  \label{t1}%
-\end{table}%
-
-\begin{figure}
-\centering
-\includegraphics[scale=0.3]{imgs/gist.jpg}
-\caption{The symbol of GIST.}
-\label{fig:gist}
-\end{figure}
+\begin{itemize}
+  \item Chapter \ref{chapter2} provides background on reinforcement learning, including policy gradient methods, constrained reinforcement learning and state-wise constrained reinforcement learning. It also reviews prior work relevant to this thesis.
+  \item Chapter \ref{chapter3} introduces the proposed method, PPO Lagrangian Network, which incorporates a state-wise Lagrange multiplier network into the PPO framework. The design and training procedure are detailed, along with comparisons to related methods.
+  \item Chapter \ref{chapter4} presents experimental results. We first investigate the influence of key hyperparameters, such as the entropy coefficient $\alpha$, bias initialization, and learning rate of the Lagrange multiplier network. We then evaluate the performance of PPO Lagrangian network across Safety Gym tasks.
+  \item Chapter \ref{chapter5} concludes the thesis with a summary of findings and discusses limitations and directions for future research.
+\end{itemize}

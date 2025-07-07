@@ -1,0 +1,30 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Chap 5. Conclusion
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Conclusion}\label{chapter5}
+
+\section{Conclusion}
+
+In this thesis, we proposed an extension to Proximal Policy Optimization (PPO) by incorporating a Lagrange multiplier network, enabling the policy to account for state-wise constraints during training.
+This method incorporates a network that estimates state-wise Lagrange multipliers to enforce safety constraints at the state level, allowing for more flexible and precise control over the policy's behavior in constrained environments.
+We conducted an empirical analysis of the impact of the bias initialization and learning rate on the performance of the Lagrange multiplier network.
+Our experiments show that setting the bias in the range of 0 to 20 and using a learning rate similar to that of the policy network yields the most stable and effective learning outcomes.
+Furthermore, when compared to existing methods such as PPO Lagrangian and Feasible Actor-Critic, our proposed approach exhibited more consistent and reliable constraint satisfaction across different tasks.
+These results suggest that our method provides a robust framework for safe reinforcement learning under state-wise constraints.
+We also found that the trained Lagrange multiplier network can be deployed at test time to assess whether the current state is potentially unsafe.
+If the network outputs a high value for a given state, it typically indicates that the agent is near a constraint-violating region (e.g., close to an obstacle).
+In such cases, we observed that the agent adjusts its behavior to avoid hazards and navigates more safely.
+
+\section{Limitations and Future Work}
+
+While our proposed method demonstrates promising results in enforcing state-wise constraints, several limitations remain.
+First, since the policy is trained to satisfy constraints by incorporating penalty terms, it does not offer deterministic safety guarantees.
+Even after training, constraint violations may still occur.
+To overcome this issue, the trained Lagrange multiplier network can be leveraged at test time to identify high-risk situations.
+If an action is considered unsafe, a safety filter may be used to override it, thereby improving safety at deployment.
+Moreover, while our method does not guarantee stability during training, this limitation may be addressed by integrating techniques that ensure safe exploration.
+For example, projection-based approaches \cite{CPO, PCPO}, which optimize the policy while keeping it within the feasible region, could be considered.
+Second, our current evaluation is restricted to the relatively simple Safety Gym environments implemented using the MuJoCo engine \cite{MuJoCo}.
+To further validate the practicality and generalizability of our approach, we plan to extend our experiments to more realistic and safety-critical domains, such as CARLA, a high-fidelity autonomous driving simulator.
+This transition would enable us to evaluate the robustness, scalability, and real-world applicability of the proposed method in more complex and dynamic scenarios.

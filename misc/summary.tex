@@ -1,4 +1,10 @@
 
 \summary
 
-Summarize your thesis.
+This thesis studies how to train policies to satisfy state-wise safety using state-wise constrained reinforcement learning.
+We focus on Lagrangian-based approaches and identify their key limitations, particularly with respect to stability and convergence.
+To address these challenges, we propose PPO Lagrangian Network, an extension of Proximal Policy Optimization that incorporates a Lagrange multiplier network to dynamically enforce safety constraints at the state level.
+Extensive experiments on the OpenAI Safety Gym benchmark show that proposed method achieves more stable and reliable constraint satisfaction than existing approaches such as PPO Lagrangian and Feasible Actor-Critic (FAC).
+We further investigate how hyperparameter choices, such as the initialization bias and learning rate of the Lagrange multiplier network, affect performance.
+Our findings indicate that careful tuning of these parameters is crucial for maintaining stability under hard constraint settings.
+Additionally, we demonstrate that the trained Lagrange multiplier network can be reused at test time as a risk estimator, allowing the agent to assess the safety of a given state and adjust its behavior accordingly.
