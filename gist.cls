@@ -481,7 +481,7 @@
     \pagenumbering{roman}
     \setcounter{page}{1}
   \fi
-  \addcontentsline{toc}{chapter}{\fontsize{12}{1pt}\selectfont
+  \phantomsection\addcontentsline{toc}{chapter}{\fontsize{12}{1pt}\selectfont
   \ifx\@korean\@@@@undefined@@@@ Abstract (English) \else 영 문 요 약 \fi}
   {\fontsize{12}{7pt}\selectfont
   \hbox{\parbox[t]{2cm}{\strut\@code\\\@studentid}\advance\linewidth by-2cm
@@ -527,7 +527,7 @@
     \pagenumbering{roman}
     \setcounter{page}{1}
   \fi
-  \addcontentsline{toc}{chapter}{\fontsize{12}{1pt}\selectfont
+  \phantomsection\addcontentsline{toc}{chapter}{\fontsize{12}{1pt}\selectfont
   \ifx\@korean\@@@@undefined@@@@ Abstract (Korean) \else 국 문 요 약 \fi}
   {\fontsize{12}{7pt}\selectfont
   \hbox{\parbox[t]{2cm}{\strut\@code\\\@studentid}\advance\linewidth by-2cm
@@ -561,21 +561,21 @@
 %
 
 \def\listtables{
-  \addcontentsline{toc}{chapter}{\fontsize{12}{1pt}\selectfont \listtablename} % List of Tables}
+  \phantomsection\addcontentsline{toc}{chapter}{\fontsize{12}{1pt}\selectfont \listtablename} % List of Tables}
   {\let\thispagestyle\@gobble \listoftables }
   \thispagestyle{plain}\pagestyle{plain}
   \newpage
 }
 
 \def\listfigures{
-  \addcontentsline{toc}{chapter}{\fontsize{12}{1pt}\selectfont \listfigurename} % List of Figures}
+  \phantomsection\addcontentsline{toc}{chapter}{\fontsize{12}{1pt}\selectfont \listfigurename} % List of Figures}
   {\let\thispagestyle\@gobble \listoffigures }
   \thispagestyle{plain}\pagestyle{plain}
   \newpage
 }
 
 \def\listalgorithms{
-  \addcontentsline{toc}{chapter}{\fontsize{12}{1pt}\selectfont \listalgorithmcfname} % \listalgorithmname} % List of Algorithms}
+  \phantomsection\addcontentsline{toc}{chapter}{\fontsize{12}{1pt}\selectfont \listalgorithmcfname} % \listalgorithmname} % List of Algorithms}
   {\let\thispagestyle\@gobble \listofalgorithms }
   \thispagestyle{plain}\pagestyle{plain}
   \newpage
@@ -586,7 +586,7 @@
 %
 
 \def\makecontents{
-  \addcontentsline{toc}{chapter}{\fontsize{12}{1pt}\selectfont \contentsnamen} % List of Contents}
+  \phantomsection\addcontentsline{toc}{chapter}{\fontsize{12}{1pt}\selectfont \contentsnamen} % List of Contents}
   {\let\thispagestyle\@gobble
    \fontsize{12}{10}\selectfont
    \tableofcontents
@@ -598,6 +598,7 @@
 %
 % chapter definition
 %
+
 
 \def\@makechapterhead#1{
   {\parindent=0pt
@@ -626,11 +627,14 @@
 % numbering definition
 %
 
+% ===== CHANGED BY DDING =====
 \def\@chapapp{Chapter}
 \renewcommand{\thechapter}{\arabic{chapter}}
 \renewcommand{\thesection}{\thechapter.\arabic{section}}
 \renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
 \renewcommand{\thesubsubsection}{\thesubsection.\arabic{subsubsection}}
+
+
 
 %
 % section definition
