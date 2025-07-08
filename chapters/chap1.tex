@@ -11,7 +11,7 @@ Although its theoretical foundations have been established for several decades, 
 One of the biggest challenges in reinforcement learning is extending it to continuous spaces, which leads to an increase in the dimensionality of state and action spaces.
 Due to the exponential growth in the number of possible states and actions, the corresponding rise in computational complexity poses a significant obstacle to learning in high-dimensional environments.
 To address this issue, traditional approaches often relied on handcrafted feature engineering to simplify the problem space.
-However, designing effective features by hand is both time-consuming and domain-specific, limiting the generalizability of learned policies across different tasks.
+However, designing effective features by hand is both time-consuming and domain-specific, limiting the generalizability of learned policies across different scenarios.
 The emergence of deep learning addressed this issue by enabling automatic feature extraction from raw, high-dimensional inputs such as images, sensor data.
 This advancement eliminated the need for manual feature design and allowed reinforcement learning agents to operate directly on raw observations.
 However, applying deep learning to reinforcement learning introduced another significant challenge: the data collected by agents is highly correlated.
@@ -34,7 +34,7 @@ A key underlying difficulty is the inherent challenge of designing reward functi
 
 In this thesis, we investigate how to learn safe policies in reinforcement learning through constrained optimization techniques, focusing on State-wise Constrained Reinforcement Learning (SCRL) \cite{SCRL-survey}, which introduces cost functions to enforce state-wise safety constraints during the learning process.
 Among various SCRL approaches, we examine Lagrangian-based methods due to their theoretical simplicity and empirical popularity.
-This thesis analyzes the limitations of existing Lagrangian methods in the SCRL setting and empirically examines how specific design choices, including the final-layer bias initialization and the learning rate of the Lagrange multiplier network, influence both performance and safety.
+This thesis analyzes the limitations of existing Lagrangian methods in the SCRL setting and empirically examines how specific design choices, including the bias initialization and the learning rate of the Lagrange multiplier network, influence both performance and safety.
 We also propose a method, PPO Lagrangian Network, which extends Proximal Policy Optimization to the state-wise constraint setting using a Lagrange multiplier network.
 The proposed method is empirically evaluated against existing approaches on a range of tasks from the OpenAI Safety Gym.
 

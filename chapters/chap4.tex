@@ -9,23 +9,23 @@
 For our experiments, we use the OpenAI Safety Gym \cite{PPO-Lagrangian, Safety-Gymnasium} environments.
 OpenAI no longer maintains Safety Gym, and its development has been continued since 2023 by the PKU-Alignment Team under the name Safety Gymnasium.
 Safety Gymnasium preserves full compatibility with the original Safety Gym environments, including identical reward functions, cost functions, agents, and other components.
-To avoid confusion, we refer to these environments as Safety Gym throughout this thesis.
+To avoid confusion, we refer to Safety Gymnasium environments as Safety Gym throughout this thesis.
 In Safety Gym environements, there are three types of agents: Point, Car, and Doggo.
-In our experiments, we use the Car agent provided in Safety Gym.
+In our experiments, we only use the Car agent.
 \begin{itemize}
     % \item \textbf{Point}: A simple 2D robot with two actuators—one for turning and another for forward/backward motion. The Point agent appears on the far left in Fig.~\ref{chap4:fig:cost}.
-    \item \textbf{Car}: A car-like robot with two independently controlled front wheels and a passive rear wheel. Since both forward movement and turning must be controlled together, it is slightly more difficult to operate than the Point. The Car agent is shown in Fig.~\ref{chap4:fig:reward}.
+    \item \textbf{Car}: A car-like robot with two independently controlled front wheels and a passive rear wheel. Since both forward movement and turning must be controlled together, it is slightly more difficult to operate than the Point. The Car agent is shown in Fig.~\ref{chap4:fig:reward} and Fig.~\ref{chap4:fig:cost}.
 \end{itemize}
 Also, there are three types of tasks: Goal, Button, and Push.
 We use two of the tasks provided in Safety Gym: Goal and Button.
 \begin{itemize}
     \item \textbf{Goal}: The agent must reach a goal location while avoiding obstacles.
     \item \textbf{Button}: The agent must press a button while avoiding obstacles.
-    \item \textbf{Push}: The agent must push yellow box to a goal location while avoiding obstacles.
+    % \item \textbf{Push}: The agent must push yellow box to a goal location while avoiding obstacles.
 \end{itemize}
 The reward function provides positive rewards as the agent moves closer to the goal, and negative rewards as it moves farther away:
 $ r_t = d_{t - 1} - d_t $, where $d_t$ is the distance to the goal at time $t$.
-Additionally, each task provides an extra positive reward when the agent successfully completes the objective, such as reaching the goal, pressing a button, or moving a box.
+Additionally, each task provides an extra positive reward when the agent successfully completes the objective, such as reaching the goal, pressing a button. %, or moving a box.
 \begin{figure*}[h]
   \centering
   \includegraphics[width=0.5\textwidth]{imgs/chap4/setup/reward.pdf}
@@ -40,7 +40,7 @@ Additionally, each task provides an extra positive reward when the agent success
   \label{chap4:fig:cost}
 \end{figure*}
 
-The cost function varies depending on the types of obstacles present in each task.
+\noindent The cost function varies depending on the types of obstacles present in each task.
 In our experimental environments, three types of obstacles are used, as illustrated in Fig.~\ref{chap4:fig:cost}:
 \begin{itemize}
     \item \textbf{Hazard}: A cost is assigned when the agent enters a hazard area. The cost is computed as $c_t = d_t - r_{\text{hazard}}$, where $d_t$ is the distance from the agent to the center of the hazard and $r_{\text{hazard}} = 0.2$ is the hazard radius.
@@ -60,7 +60,7 @@ Dense costs allow for more precise and informative constraint definitions compar
 
 As discussed in Section~\ref{chap2:sec3:sac}, Soft Actor-Critic (SAC) promotes stochastic exploration by maximizing both expected return and policy entropy. 
 The temperature parameter $\alpha$ controls the importance of the entropy term: larger values of $\alpha$ encourage more exploratory and diverse action selection.
-However, in the Feasible Actor-Critic (FAC) framework, this exploration objective can conflict with the effect of the Lagrange multiplier, which encourages the policy to satisfy safety constraints.
+However, in the Feasible Actor-Critic (FAC), this exploration objective can conflict with the effect of the Lagrange multiplier, which encourages the policy to satisfy safety constraints.
 To examine this trade-off, we compare the training performance of unconstrained SAC (yellow curve) and FAC with various fixed $\alpha$ values, using Fig.~\ref{chap4:fig:fac_return}, Fig.~\ref{chap4:fig:fac_cost}.
 In Figure~\ref{chap4:fig:fac_cost}, although small spikes are present, FAC with all tested $\alpha$ values generally maintains a lower cost compared to unconstrained SAC.
 This indicates that the constraint-satisfying mechanism in FAC is working as designed, leading to lower cost return by enforcing state-wise constraints more effectively.
@@ -124,7 +124,7 @@ Specifically, we manually initialized the bias term of the last linear layer to 
   \label{chap4:fig:lagrange_init_return}
 \end{figure*}
 
-In Fig.~\ref{chap4:fig:lagrange_init_return}, shows the training curves of return over 1000 epochs for different bias initializations of the Lagrange multiplier network.
+\noindent In Fig.~\ref{chap4:fig:lagrange_init_return}, shows the training curves of return over 1000 epochs for different bias initializations of the Lagrange multiplier network.
 Although the convergence behavior varies across initial values, all four settings demonstrate stable policy learning overall.
 When the initial bias is set to 0, the early phase (epoch $0 \sim 300$) closely resembles unconstrained PPO, showing a rapid increase in return.
 However, as the Lagrange multiplier values grow, the return gradually decreases, indicating stronger constraint enforcement over time.
@@ -163,6 +163,14 @@ If the learning rate is too high, the multiplier may oscillate excessively, caus
 Conversely, if it’s too low, the multiplier may adapt too slowly to apply appropriate penalties.
 To analyze the effect of the learning rate in the Lagrange multiplier network, we conducted experiments by varying the learning rate used for optimizing the network parameters.
 Specifically, we tested three different learning rate values: 0.0003, 0.003, and 0.03.
+Fig ~\ref{chap4:fig:lagrange_lr_return} - \ref{chap4:fig:lagrange_lr_lagrange} show the impact of learning rate on return, cost, and the Lagrange multiplier.
+Except for the case with a learning rate of 0.0003, all other settings converge to near-zero returns during training.
+In the case of a 0.003 learning rate, the return begins to decrease slightly after around epoch 400.
+During this period, the Lagrange multiplier continued its steady growth, increasing from around 200 at epoch 400 to approximately 500 by epoch 1000, as shown in Fig.~\ref{chap4:fig:lagrange_lr_lagrange}.
+This suggests that stronger constraint enforcement over time leads to a drop in reward.
+With a learning rate of 0.03, the Lagrange multiplier grows rapidly and exhibits high variance, making the overall training highly unstable.
+These findings suggest that the learning rate of the Lagrange multiplier network must be carefully tuned to ensure stable training while appropriately enforcing the constraints.
+Therefore, in the subsequent experiments, we initialize the bias of the Lagrange multiplier network to 20 and set the learning rate to 0.0003.
 
 \begin{figure*}[h]
   \centering
@@ -184,14 +192,6 @@ Specifically, we tested three different learning rate values: 0.0003, 0.003, and
   \caption{Training curves of Lagrange multiplier over epochs for different learning rate initializations in the Lagrange multiplier network}
   \label{chap4:fig:lagrange_lr_lagrange}
 \end{figure*}
-
-Fig ~\ref{chap4:fig:lagrange_lr_return} - \ref{chap4:fig:lagrange_lr_lagrange} show the impact of learning rate on return, cost, and the Lagrange multiplier.
-Except for the case with a learning rate of 0.0003, all other settings converge to near-zero returns during training.
-In the case of a 0.003 learning rate, the return begins to decrease slightly after around epoch 400. During this period, the Lagrange multiplier continued its steady growth, increasing from around 200 at epoch 400 to approximately 500 by epoch 1000.
-This suggests that stronger constraint enforcement over time leads to a drop in reward.
-With a learning rate of 0.03, the Lagrange multiplier grows rapidly and exhibits high variance, making the overall training highly unstable.
-These findings suggest that the learning rate of the Lagrange multiplier network must be carefully tuned to ensure stable training while appropriately enforcing the constraints.
-Therefore, in the subsequent experiments, we initialize the bias of the Lagrange multiplier network to 20 and set the learning rate to 0.0003.
 
 \clearpage
 
@@ -225,9 +225,9 @@ In this section, we present the a comparative evaluation of PPO Lagrangian, Feas
 
 \subsection{Car Goal} \label{chap4:sec5:car_goal}
 
-In the Car Goal task, we compare the performance of Feasible Actor-Critic (FAC), PPO Lagrangian, and our proposed PPO Lagrangian Network (PPO-Lagnet).
+In the Car Goal task, we compare the performance of Feasible Actor-Critic (FAC), PPO Lagrangian, and our proposed PPO Lagrangian Network.
 As shown in Fig.~\ref{chap4:fig:car_goal_return}, all three methods converge to similar return values, indicating comparable task performance in terms of reward.
-In terms of cost return (Fig.~\ref{chap4:fig:car_goal_cost}), both PPO-based methods (PPO Lagrangian and PPO-Lagnet) show stable and consistent reductions in cost over time.
+In terms of cost return (Fig.~\ref{chap4:fig:car_goal_cost}), both PPO-based methods show stable and consistent reductions in cost over time.
 In contrast, the FAC method produces highly fluctuating cost values throughout training.
 In addition, as shown in Fig.~\ref{chap4:fig:car_goal_return}, the FAC method exhibits higher variance in return compared to the PPO-based methods.
 This instability may be caused by a conflict between SAC’s entropy regularization and the penalty term introduced by the Lagrange multiplier.
@@ -266,7 +266,7 @@ This leads to differences in the learned Q-function and cost Q-function values, 
 \subsection{Car Button}
 
 Unlike the Car Goal task discussed in Section~\ref{chap4:sec5:car_goal}, this task contains more obstacles, which makes policy learning difficult when the cost limit is set to zero (i.e., when any constraint violation is strictly prohibited).
-Therefore, in this task, we set the state-wise allowable cost to 0.3, which corresponds to allowing a maximum cumulative cost of 300 per episode (given the episode length is fixed at 1000 steps).
+Therefore, in this task, we allow the state-wise cost to be up to 0.3, which corresponds to a maximum cumulative cost of 300 per episode, given that the episode length is fixed at 1000 steps.
 Additionally, since setting the Lagrange multiplier network’s bias to 20 resulted in unstable learning in this task, we initialized it with zero bias in this experiment.
 As shown in Fig.~\ref{chap4:fig:car_button_return}, our proposed method demonstrates stable convergence in return.
 In contrast, the PPO Lagrangian method (green) shows unstable policy behavior between epochs 300 and 600, followed by performance recovery in the later stages.

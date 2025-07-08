@@ -25,6 +25,6 @@ To overcome this issue, the trained Lagrange multiplier network can be leveraged
 If an action is considered unsafe, a safety filter may be used to override it, thereby improving safety at deployment.
 Moreover, while our method does not guarantee stability during training, this limitation may be addressed by integrating techniques that ensure safe exploration.
 For example, projection-based approaches \cite{CPO, PCPO}, which optimize the policy while keeping it within the feasible region, could be considered.
-Second, our current evaluation is restricted to the relatively simple Safety Gym environments implemented using the MuJoCo engine \cite{MuJoCo}.
-To further validate the practicality and generalizability of our approach, we plan to extend our experiments to more realistic and safety-critical domains, such as CARLA, a high-fidelity autonomous driving simulator.
+Second, our current evaluation is restricted to the relatively simple Safety Gym environments implemented using the MuJoCo engine.
+To further validate the practicality and generalizability of our approach, we plan to extend our experiments to more realistic and safety-critical domains, such as CARLA \cite{CARLA}, a high-fidelity autonomous driving simulator.
 This transition would enable us to evaluate the robustness, scalability, and real-world applicability of the proposed method in more complex and dynamic scenarios.
