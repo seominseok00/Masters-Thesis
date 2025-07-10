@@ -70,7 +70,7 @@ This allows the algorithm to enforce constraints more precisely at the state lev
     Update the policy parameters $\theta$ by maximizing the objective function:
     \begin{equation*}
       \begin{aligned}
-        \theta_{k + 1} = \arg \max \frac{1}{|D_k|T} \sum_{\tau \in D_k} \sum^T_{t = 0} \Big[ &\min \left( r_t(\theta) \hat{A}^{\pi_{\theta_k}}(s_t, a_t), \; g\left( \epsilon, \hat{A}^{\pi_{\theta_k}}(s_t, a_t) \right) \right) \\
+        \theta_{k + 1} = \arg \max_\theta \frac{1}{|D_k|T} \sum_{\tau \in D_k} \sum^T_{t = 0} \Big[ &\min \left( r_t(\theta) \hat{A}^{\pi_{\theta_k}}(s_t, a_t), \; g\left( \epsilon, \hat{A}^{\pi_{\theta_k}}(s_t, a_t) \right) \right) \\
         & - \lambda_\xi (s_t) r_t(\theta) \hat{A}^{\pi_{\theta_k}}_c (s_t, a_t)  \Big]\\
         \text{where }
         r_t(\theta) = \frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_k}(a_t|s_t)}, \;

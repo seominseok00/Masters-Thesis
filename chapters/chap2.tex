@@ -11,7 +11,7 @@
 Reinforcement Learning (RL) is a framework in which an agent interacts with an environment and learns a policy to maximize cumulative rewards.
 The agent observes the state of the environment, takes actions, and receives rewards based on those actions.
 This process is formalized as a Markov Decision Process (MDP) \cite{MDP}, which provides a formal strcuture for modeling decision-making problems.
-An MDP is defined by a tuple \((\mathcal{S}, \mathcal{A}, P, R, \gamma)\), where $\mathcal{S}$ is the set of states, $\mathcal{A}$ is the set of actions, $P$ is the state transition probability function, $R$ is the reward function, and $\gamma \in [0, 1)$ is the discount factor.
+An MDP is defined by a tuple $\langle \mathcal{S}, \mathcal{A}, P, R, \gamma \rangle$, where $\mathcal{S}$ is the set of states, $\mathcal{A}$ is the set of actions, $P$ is the state transition probability function, $R$ is the reward function, and $\gamma \in [0, 1)$ is the discount factor.
 In this thesis, we consider a finite-horizon setting and use the undiscounted return.
 The objective of RL is to find an optimal policy $\pi^*$ that maximizes the expected cumulative reward, defined as:
 \begin{equation}
